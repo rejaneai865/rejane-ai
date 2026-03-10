@@ -6,10 +6,14 @@ const cors = require("cors")
 const askAI = require("./brain/aiRouter")
 const usageLimiter = require("./auth/usageLimiter")
 
+const stripeRoutes = require("./payments/stripeRoutes")
+
 const app = express()
 
 app.use(cors())
 app.use(express.json())
+
+app.use("/payments",stripeRoutes)
 
 app.get("/",(req,res)=>{
 
