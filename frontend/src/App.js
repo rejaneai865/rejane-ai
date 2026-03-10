@@ -1,4 +1,4 @@
-import {useState} from "react"
+import { useState } from "react"
 import axios from "axios"
 
 function App(){
@@ -7,10 +7,12 @@ const [question,setQuestion] = useState("")
 const [answer,setAnswer] = useState("")
 const [showFeedback,setShowFeedback] = useState(false)
 
+const API_URL = "https://rejane-ai-backend.onrender.com"
+
 async function askAI(){
 
 const res = await axios.post(
-"http://localhost:5000/ask-ai",
+`${API_URL}/ask-ai`,
 {prompt:question}
 )
 
@@ -22,7 +24,7 @@ setShowFeedback(true)
 async function improveAnswer(){
 
 const res = await axios.post(
-"http://localhost:5000/improve",
+`${API_URL}/improve`,
 {prompt:question}
 )
 
