@@ -10,6 +10,7 @@ const stripeRoutes = require("./payments/stripeRoutes")
 const apiRoutes = require("./api/apiRoutes")
 const youtubeRoutes = require("./youtube/youtubeRoutes")
 const mapsRoutes = require("./maps/mapsRoutes")
+const braveRoutes = require("./search/braveRoutes")
 
 const app = express()
 
@@ -23,6 +24,8 @@ app.use("/api",apiRoutes)
 app.use("/youtube",youtubeRoutes)
 
 app.use("/maps",mapsRoutes)
+
+app.use("/search",braveRoutes)
 
 app.get("/",(req,res)=>{
 
