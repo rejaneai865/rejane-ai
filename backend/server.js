@@ -9,6 +9,7 @@ const usageLimiter = require("./auth/usageLimiter")
 const stripeRoutes = require("./payments/stripeRoutes")
 const apiRoutes = require("./api/apiRoutes")
 const youtubeRoutes = require("./youtube/youtubeRoutes")
+const mapsRoutes = require("./maps/mapsRoutes")
 
 const app = express()
 
@@ -20,6 +21,8 @@ app.use("/payments",stripeRoutes)
 app.use("/api",apiRoutes)
 
 app.use("/youtube",youtubeRoutes)
+
+app.use("/maps",mapsRoutes)
 
 app.get("/",(req,res)=>{
 
