@@ -1,59 +1,72 @@
 const express = require("express")
+
+const router = express.Router()
+
 const bcrypt = require("bcryptjs")
+
 const jwt = require("jsonwebtoken")
 
 const User = require("./userModel")
 
-const router = express.Router()
-
-
-
-router.post("/register", async(req,res)=>{
+router.post("/signup",async(req,res)=>{
 
 try{
 
-const {email,password} = req.body
+const email = req.body.email
+const password = req.body.password
 
-const hashedPassword = await bcrypt.hash(password,10)
+const hashed = await bcrypt.hash(password,10)
 
 const user = await User.create({
-email,
-password:hashedPassword
+email:email,
+password:hashed
 })
 
-res.json({message:"User created"})
+res.json({
+message:"User created"
+})
 
 }catch(err){
 
-res.json({message:"Registration error"})
+res.status(500).json({
+error:"Signup failed"
+})
 
 }
 
 })
 
-
-
-router.post("/login", async(req,res)=>{
+router.post("/login",async(req,res)=>{
 
 try{
 
-const {email,password} = req.body
+const email = req.body.email
+const password = req.body.password
 
 const user = await User.findOne({email})
 
 if(!user){
-return res.json({message:"User not found"})
+
+return res.status(401).json({
+error:"User not found"
+})
+
 }
 
 const valid = await bcrypt.compare(password,user.password)
 
 if(!valid){
-return res.json({message:"Wrong password"})
+
+return res.status(401).json({
+error:"Invalid password"
+})
+
 }
 
 const token = jwt.sign(
-{id:user._id,email:user.email},
-process.env.JWT_SECRET
+{userId:user._id},
+process.env.JWT_SECRET,
+{expiresIn:"7d"}
 )
 
 res.json({
@@ -62,7 +75,9 @@ token:token
 
 }catch(err){
 
-res.json({message:"Login error"})
+res.status(500).json({
+error:"Login failed"
+})
 
 }
 

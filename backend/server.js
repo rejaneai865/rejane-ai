@@ -11,11 +11,14 @@ const apiRoutes = require("./api/apiRoutes")
 const youtubeRoutes = require("./youtube/youtubeRoutes")
 const mapsRoutes = require("./maps/mapsRoutes")
 const braveRoutes = require("./search/braveRoutes")
+const authRoutes = require("./auth/authRoutes")
 
 const app = express()
 
 app.use(cors())
 app.use(express.json())
+
+app.use("/auth",authRoutes)
 
 app.use("/payments",stripeRoutes)
 
