@@ -4,6 +4,7 @@ const express = require("express")
 const cors = require("cors")
 
 const askAI = require("./brain/aiRouter")
+const usageLimiter = require("./auth/usageLimiter")
 
 const app = express()
 
@@ -16,7 +17,7 @@ res.send("REJANE AI Backend Running")
 
 })
 
-app.post("/ask-ai",async(req,res)=>{
+app.post("/ask-ai",usageLimiter,async(req,res)=>{
 
 try{
 
@@ -41,6 +42,8 @@ error:"AI failed"
 
 app.post("/improve",async(req,res)=>{
 
+try{
+
 const prompt = req.body.prompt
 
 const claude = require("./ai/claude")
@@ -51,12 +54,20 @@ res.json({
 response:improved
 })
 
+}catch(err){
+
+res.status(500).json({
+error:"Improve failed"
+})
+
+}
+
 })
 
 const PORT = process.env.PORT || 5000
 
 app.listen(PORT,()=>{
 
-console.log("Server running")
+console.log("Server running on port",PORT)
 
 })

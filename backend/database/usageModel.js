@@ -2,10 +2,7 @@ const mongoose = require("mongoose")
 
 const usageSchema = new mongoose.Schema({
 
-userId:{
-type:String,
-required:true
-},
+userId:String,
 
 queriesToday:{
 type:Number,
