@@ -1,56 +1,47 @@
 const Memory = require("../database/memoryModel")
-const createEmbedding = require("../ai/embedding")
 
 function cosineSimilarity(a,b){
 
-let dot = 0
-let normA = 0
-let normB = 0
+let dot=0
+let magA=0
+let magB=0
 
 for(let i=0;i<a.length;i++){
 
 dot += a[i]*b[i]
-normA += a[i]*a[i]
-normB += b[i]*b[i]
+magA += a[i]*a[i]
+magB += b[i]*b[i]
 
 }
 
-normA = Math.sqrt(normA)
-normB = Math.sqrt(normB)
+magA = Math.sqrt(magA)
+magB = Math.sqrt(magB)
 
-return dot/(normA*normB)
+return dot/(magA*magB)
 
 }
 
-async function searchMemory(prompt){
-
-const embedding = await createEmbedding(prompt)
+async function searchMemory(queryEmbedding){
 
 const memories = await Memory.find()
 
 let best = null
 let bestScore = 0
 
-for(const m of memories){
+for(const mem of memories){
 
-const score = cosineSimilarity(embedding,m.embedding)
+const score = cosineSimilarity(queryEmbedding,mem.embedding)
 
-if(score > bestScore){
+if(score>bestScore){
 
 bestScore = score
-best = m
+best = mem
 
 }
 
 }
 
-if(bestScore > 0.90){
-
-return best.response
-
-}
-
-return null
+return best
 
 }
 

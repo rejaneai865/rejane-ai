@@ -1,69 +1,74 @@
 const openai = require("../ai/openai")
-const gemini = require("../ai/gemini")
 const grok = require("../ai/grok")
+const gemini = require("../ai/gemini")
 const perplexity = require("../ai/perplexity")
-const claude = require("../ai/claude")
 
-const rankResponses = require("./responseRanker")
+const Memory = require("../database/memoryModel")
+
+const createEmbedding = require("./embedding")
 const searchMemory = require("./vectorSearch")
 
 async function askAI(prompt){
 
-const memory = await searchMemory(prompt)
+try{
+
+const embedding = await createEmbedding(prompt)
+
+const memory = await searchMemory(embedding)
+
+let context=""
 
 if(memory){
 
-return {
-text:memory,
-model:"memory"
+context="Previous knowledge: "+memory.answer
+
+}
+
+const finalPrompt = context+" User question: "+prompt
+
+const responses = await Promise.allSettled([
+
+perplexity(finalPrompt),
+openai(finalPrompt),
+grok(finalPrompt),
+gemini(finalPrompt)
+
+])
+
+let text=""
+
+for(const r of responses){
+
+if(r.status==="fulfilled"){
+
+text=r.value
+break
+
 }
 
 }
 
-let responses = []
+await Memory.create({
 
-try{
+question:prompt,
+answer:text,
+embedding:embedding
 
-const gpt = await openai(prompt)
-responses.push({model:"gpt",text:gpt})
+})
 
-}catch{}
+return{
+text:text,
+model:"multi-ai"
+}
 
-try{
+}catch(err){
 
-const gem = await gemini(prompt)
-responses.push({model:"gemini",text:gem})
-
-}catch{}
-
-try{
-
-const gx = await grok(prompt)
-responses.push({model:"grok",text:gx})
-
-}catch{}
-
-try{
-
-const px = await perplexity(prompt)
-responses.push({model:"perplexity",text:px})
-
-}catch{}
-
-if(responses.length === 0){
-
-const cl = await claude(prompt)
-
-return {
-text:cl,
-model:"claude"
+return{
+text:"AI failed",
+model:"error"
 }
 
 }
-
-const best = rankResponses(responses)
-
-return best
 
 }
 

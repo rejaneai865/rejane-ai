@@ -2,16 +2,13 @@ const mongoose = require("mongoose")
 
 const memorySchema = new mongoose.Schema({
 
-prompt:String,
+userId:String,
 
-response:String,
+question:String,
+
+answer:String,
 
 embedding:[Number],
-
-likes:{
-type:Number,
-default:0
-},
 
 created:{
 type:Date,
