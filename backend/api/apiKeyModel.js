@@ -6,14 +6,14 @@ userId:String,
 
 apiKey:String,
 
+created:{
+type:Date,
+default:Date.now
+},
+
 plan:{
 type:String,
 default:"free"
-},
-
-createdAt:{
-type:Date,
-default:Date.now
 }
 
 })
