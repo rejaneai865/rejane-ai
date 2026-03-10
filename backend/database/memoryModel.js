@@ -2,18 +2,18 @@ const mongoose = require("mongoose")
 
 const memorySchema = new mongoose.Schema({
 
-question:String,
+prompt:String,
 
-answer:String,
+response:String,
 
 embedding:[Number],
 
-liked:{
-type:Boolean,
-default:null
+likes:{
+type:Number,
+default:0
 },
 
-createdAt:{
+created:{
 type:Date,
 default:Date.now
 }

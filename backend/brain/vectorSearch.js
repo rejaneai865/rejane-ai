@@ -1,37 +1,52 @@
-const cosineSimilarity = require("cosine-similarity")
 const Memory = require("../database/memoryModel")
 const createEmbedding = require("../ai/embedding")
 
-async function searchSimilarQuestion(question){
+function cosineSimilarity(a,b){
 
-const questionVector = await createEmbedding(question)
+let dot = 0
+let normA = 0
+let normB = 0
 
-const memories = await Memory.find({liked:true})
+for(let i=0;i<a.length;i++){
 
-let bestMatch = null
-let highestScore = 0
+dot += a[i]*b[i]
+normA += a[i]*a[i]
+normB += b[i]*b[i]
 
-for(const memory of memories){
+}
 
-if(!memory.embedding) continue
+normA = Math.sqrt(normA)
+normB = Math.sqrt(normB)
 
-const score = cosineSimilarity(
-questionVector,
-memory.embedding
-)
+return dot/(normA*normB)
 
-if(score > highestScore){
+}
 
-highestScore = score
-bestMatch = memory
+async function searchMemory(prompt){
+
+const embedding = await createEmbedding(prompt)
+
+const memories = await Memory.find()
+
+let best = null
+let bestScore = 0
+
+for(const m of memories){
+
+const score = cosineSimilarity(embedding,m.embedding)
+
+if(score > bestScore){
+
+bestScore = score
+best = m
 
 }
 
 }
 
-if(highestScore > 0.85){
+if(bestScore > 0.90){
 
-return bestMatch
+return best.response
 
 }
 
@@ -39,4 +54,4 @@ return null
 
 }
 
-module.exports = searchSimilarQuestion
+module.exports = searchMemory
