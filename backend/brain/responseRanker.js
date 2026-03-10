@@ -1,18 +1,12 @@
 function rankResponses(responses){
 
-let best = ""
+responses.sort((a,b)=>{
 
-for(let r of responses){
+return b.text.length - a.text.length
 
-if(!r) continue
+})
 
-if(r.length > best.length){
-best = r
-}
-
-}
-
-return best
+return responses[0]
 
 }
 

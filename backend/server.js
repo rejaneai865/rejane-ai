@@ -3,81 +3,60 @@ require("dotenv").config()
 const express = require("express")
 const cors = require("cors")
 
-const connectDB = require("./database/db")
+const askAI = require("./brain/aiRouter")
 
 const app = express()
 
 app.use(cors())
 app.use(express.json())
 
-connectDB()
+app.get("/",(req,res)=>{
 
-const PORT = 5000
+res.send("REJANE AI Backend Running")
 
-
-
-app.get("/", (req,res)=>{
-res.send("REJANE AI backend running")
 })
 
-
-
-app.post("/ask-ai", async(req,res)=>{
+app.post("/ask-ai",async(req,res)=>{
 
 try{
 
 const prompt = req.body.prompt
 
-if(!prompt){
-return res.json({
-response:"Please enter a question"
-})
-}
-
-const fakeAnswer = "This is a test AI response for: " + prompt
+const result = await askAI(prompt)
 
 res.json({
-response:fakeAnswer
+response:result.text,
+model:result.model
 })
 
 }catch(err){
 
-res.json({
-response:"Server error"
+res.status(500).json({
+error:"AI failed"
 })
 
 }
 
 })
 
-
-
-app.post("/improve", async(req,res)=>{
-
-try{
+app.post("/improve",async(req,res)=>{
 
 const prompt = req.body.prompt
 
-const improvedAnswer = "Improved answer for: " + prompt
+const claude = require("./ai/claude")
+
+const improved = await claude(prompt)
 
 res.json({
-response:improvedAnswer
+response:improved
 })
-
-}catch(err){
-
-res.json({
-response:"Claude error"
-})
-
-}
 
 })
 
-
+const PORT = process.env.PORT || 5000
 
 app.listen(PORT,()=>{
 
-console.log("Server running on port "+PORT)
+console.log("Server running")
 
 })
