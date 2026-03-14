@@ -1,16 +1,35 @@
 const express = require("express")
 const router = express.Router()
 
-const Stripe = require("stripe")
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-
-const Usage = require("../database/usageModel")
-
-router.post("/create-checkout-session", async (req,res)=>{
+let stripe = null
 
 try{
 
-const userId = req.body.userId
+const Stripe = require("stripe")
+
+if(process.env.STRIPE_SECRET_KEY){
+
+stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+
+}
+
+}catch(err){
+
+console.log("Stripe not configured yet")
+
+}
+
+router.post("/create-checkout", async(req,res)=>{
+
+if(!stripe){
+
+return res.json({
+message:"Stripe not configured yet"
+})
+
+}
+
+try{
 
 const session = await stripe.checkout.sessions.create({
 
@@ -21,72 +40,29 @@ mode:"subscription",
 line_items:[{
 
 price_data:{
-
 currency:"usd",
-
 product_data:{
-name:"REJANE AI Pro"
+name:"REJANE AI PRO"
 },
-
-unit_amount:1000,
-
-recurring:{
-interval:"month"
-}
-
+unit_amount:1000
 },
 
 quantity:1
 
 }],
 
-success_url:"https://rejane-ai.vercel.app/success",
-
-cancel_url:"https://rejane-ai.vercel.app/cancel",
-
-metadata:{
-userId:userId
-}
+success_url:"http://localhost:3000/success",
+cancel_url:"http://localhost:3000/cancel"
 
 })
 
-res.json({
-url:session.url
-})
+res.json({url:session.url})
 
 }catch(err){
 
-res.status(500).json({
-error:"Stripe session failed"
-})
+res.status(500).json({error:"Stripe error"})
 
 }
-
-})
-
-router.post("/webhook",express.raw({type:"application/json"}),async(req,res)=>{
-
-const event = req.body
-
-if(event.type === "checkout.session.completed"){
-
-const session = event.data.object
-
-const userId = session.metadata.userId
-
-await Usage.findOneAndUpdate(
-
-{userId:userId},
-
-{plan:"pro"},
-
-{upsert:true}
-
-)
-
-}
-
-res.json({received:true})
 
 })
 

@@ -1,73 +1,106 @@
-import { useState } from "react"
+import {useState} from "react"
 import axios from "axios"
 
 function App(){
 
-const [question,setQuestion] = useState("")
-const [answer,setAnswer] = useState("")
-const [showFeedback,setShowFeedback] = useState(false)
+const [messages,setMessages] = useState([])
+const [input,setInput] = useState("")
+const [loading,setLoading] = useState(false)
 
-const API_URL = "https://rejane-ai-backend.onrender.com"
+async function sendMessage(){
 
-async function askAI(){
+if(!input) return
+
+const userMessage = {role:"user",text:input}
+
+setMessages(prev=>[...prev,userMessage])
+
+setLoading(true)
+
+try{
 
 const res = await axios.post(
-`${API_URL}/ask-ai`,
-{prompt:question}
+"http://localhost:5000/ask-ai",
+{prompt:input}
 )
 
-setAnswer(res.data.response)
-setShowFeedback(true)
+const aiMessage = {
+role:"ai",
+text:res.data.response
+}
+
+setMessages(prev=>[...prev,aiMessage])
+
+}catch(err){
+
+const aiMessage = {
+role:"ai",
+text:"Cannot reach backend server"
+}
+
+setMessages(prev=>[...prev,aiMessage])
 
 }
 
-async function improveAnswer(){
-
-const res = await axios.post(
-`${API_URL}/improve`,
-{prompt:question}
-)
-
-setAnswer(res.data.response)
+setLoading(false)
+setInput("")
 
 }
 
 return(
 
-<div style={{padding:40}}>
+<div style={{maxWidth:"700px",margin:"auto",padding:"20px"}}>
 
 <h1>REJANE AI</h1>
 
-<input
-style={{width:"400px"}}
-value={question}
-onChange={(e)=>setQuestion(e.target.value)}
-placeholder="Ask anything"
-/>
+<div style={{
+border:"1px solid #ccc",
+height:"400px",
+overflowY:"auto",
+padding:"10px",
+marginBottom:"10px"
+}}>
 
-<button onClick={askAI}>
-Ask AI
-</button>
+{messages.map((msg,index)=>(
 
-<h3>{answer}</h3>
+<div key={index}
+style={{
+textAlign:msg.role==="user"?"right":"left",
+marginBottom:"10px"
+}}>
 
-{showFeedback && (
+<span style={{
+display:"inline-block",
+padding:"10px",
+borderRadius:"10px",
+background:msg.role==="user"?"#007bff":"#eee",
+color:msg.role==="user"?"white":"black"
+}}>
 
-<div>
+{msg.text}
 
-<p>Did you like this answer?</p>
-
-<button onClick={()=>setShowFeedback(false)}>
-YES
-</button>
-
-<button onClick={improveAnswer}>
-NO
-</button>
+</span>
 
 </div>
 
-)}
+))}
+
+{loading && <p>AI thinking...</p>}
+
+</div>
+
+<input
+value={input}
+onChange={(e)=>setInput(e.target.value)}
+placeholder="Ask anything..."
+style={{width:"80%",padding:"10px"}}
+/>
+
+<button onClick={sendMessage} style={{padding:"10px"}}>
+
+Send
+
+</button>
 
 </div>
 

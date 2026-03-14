@@ -1,82 +1,33 @@
 require("dotenv").config()
 
+console.log("Gemini key:", process.env.GEMINI_API_KEY)
+
 const express = require("express")
 const cors = require("cors")
 
-const askAI = require("./brain/aiRouter")
-const usageLimiter = require("./auth/usageLimiter")
-
-const stripeRoutes = require("./payments/stripeRoutes")
-const apiRoutes = require("./api/apiRoutes")
-const youtubeRoutes = require("./youtube/youtubeRoutes")
-const mapsRoutes = require("./maps/mapsRoutes")
-const braveRoutes = require("./search/braveRoutes")
-const authRoutes = require("./auth/authRoutes")
+const { askAI } = require("./brain/aiRouter")
 
 const app = express()
 
 app.use(cors())
 app.use(express.json())
 
-app.use("/auth",authRoutes)
-
-app.use("/payments",stripeRoutes)
-
-app.use("/api",apiRoutes)
-
-app.use("/youtube",youtubeRoutes)
-
-app.use("/maps",mapsRoutes)
-
-app.use("/search",braveRoutes)
-
-app.get("/",(req,res)=>{
-
-res.send("REJANE AI Backend Running")
-
-})
-
-app.post("/ask-ai",usageLimiter,async(req,res)=>{
+app.post("/ask-ai", async (req,res)=>{
 
 try{
 
 const prompt = req.body.prompt
 
-const result = await askAI(prompt)
+const response = await askAI(prompt)
 
-res.json({
-response:result.text,
-model:result.model
-})
+res.json({response})
 
 }catch(err){
 
-res.status(500).json({
-error:"AI failed"
-})
-
-}
-
-})
-
-app.post("/improve",async(req,res)=>{
-
-try{
-
-const prompt = req.body.prompt
-
-const claude = require("./ai/claude")
-
-const improved = await claude(prompt)
+console.log(err)
 
 res.json({
-response:improved
-})
-
-}catch(err){
-
-res.status(500).json({
-error:"Improve failed"
+response:"Backend AI error"
 })
 
 }
@@ -85,8 +36,8 @@ error:"Improve failed"
 
 const PORT = process.env.PORT || 5000
 
-app.listen(PORT,()=>{
+app.listen(PORT, ()=>{
 
-console.log("Server running on port",PORT)
+console.log("Server running on port " + PORT)
 
 })

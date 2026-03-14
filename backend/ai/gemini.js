@@ -1,28 +1,37 @@
-const axios = require("axios")
+const { GoogleGenerativeAI } = require("@google/generative-ai")
 
-async function askGemini(prompt){
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
-try{
+async function gemini(prompt) {
 
-const res = await axios.post(
-`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_KEY}`,
-{
-contents:[
-{
-parts:[{text:prompt}]
+  try {
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash"
+    })
+
+    const result = await model.generateContent({
+      contents: [
+        {
+          parts: [
+            { text: prompt }
+          ]
+        }
+      ]
+    })
+
+    const response = result.response
+    const text = response.text()
+
+    return text
+
+  } catch (error) {
+
+    console.error("Gemini error:", error)
+    return null
+
+  }
+
 }
-]
-}
-)
 
-return res.data.candidates[0].content.parts[0].text
-
-}catch(err){
-
-return null
-
-}
-
-}
-
-module.exports = askGemini
+module.exports = gemini
